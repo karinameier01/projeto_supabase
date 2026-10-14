@@ -1,0 +1,7 @@
+{
+  "name": "projeto_supabase",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue-vite"
+}
