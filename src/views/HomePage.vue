@@ -1,56 +1,96 @@
 <template>
   <ion-page>
-    <ion-header :translucent="true">
+    <ion-header>
       <ion-toolbar>
-        <ion-title>Blank</ion-title>
+        <ion-title>Início</ion-title>
+        <ion-buttons slot="end">
+          <ion-button @click="sair">Sair</ion-button>
+        </ion-buttons>
       </ion-toolbar>
     </ion-header>
 
-    <ion-content :fullscreen="true">
-      <ion-header collapse="condense">
-        <ion-toolbar>
-          <ion-title size="large">Blank</ion-title>
-        </ion-toolbar>
-      </ion-header>
+    <ion-content class="ion-padding">
+      <div class="boas-vindas">
+        <ion-avatar class="avatar">
+          <img v-if="avatarUrl" :src="avatarUrl" alt="Foto de perfil" />
+          <div v-else class="avatar-vazio">Sem foto</div>
+        </ion-avatar>
 
-      <div id="container">
-        <strong>Ready to create an app?</strong>
-        <p>Start with Ionic <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">UI Components</a></p>
+        <h1>Bem-vindo, {{ nomeExibido }}!</h1>
+        <p class="email">{{ email }}</p>
+
+        <ion-button expand="block" class="ion-margin-top" router-link="/profile">
+          Meu perfil
+        </ion-button>
       </div>
     </ion-content>
   </ion-page>
 </template>
 
 <script setup lang="ts">
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/vue';
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import {
+  IonPage, IonHeader, IonToolbar, IonTitle, IonButtons,
+  IonContent, IonButton, IonAvatar, onIonViewWillEnter,
+} from '@ionic/vue'
+import { supabase } from '@/lib/supabase'
+
+const router = useRouter()
+const nomeExibido = ref('')
+const email = ref('')
+const avatarUrl = ref('')
+
+// Roda toda vez que a tela aparece (inclusive ao voltar do perfil)
+onIonViewWillEnter(carregar)
+
+async function carregar() {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return
+
+  email.value = user.email ?? ''
+
+  const { data } = await supabase
+    .from('profiles')
+    .select('nickname, nome, avatar_url')
+    .eq('id', user.id)
+    .maybeSingle()
+
+  nomeExibido.value = data?.nickname || data?.nome || user.email || ''
+  avatarUrl.value = data?.avatar_url ?? ''
+}
+
+async function sair() {
+  await supabase.auth.signOut()
+  router.replace('/login')
+}
 </script>
 
 <style scoped>
-#container {
+.boas-vindas {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
-  
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
+  margin-top: 32px;
 }
-
-#container strong {
-  font-size: 20px;
-  line-height: 26px;
+.avatar {
+  width: 120px;
+  height: 120px;
+  margin-bottom: 16px;
 }
-
-#container p {
-  font-size: 16px;
-  line-height: 22px;
-  
-  color: #8c8c8c;
-  
+.avatar-vazio {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ion-color-light);
+  color: var(--ion-color-medium);
+  font-size: 14px;
+}
+.email {
+  color: var(--ion-color-medium);
   margin: 0;
-}
-
-#container a {
-  text-decoration: none;
 }
 </style>
