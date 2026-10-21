@@ -12,8 +12,8 @@
         Entrar
       </ion-button>
       <ion-button expand="block" fill="clear" router-link="/forgot-password">
-        Esqueci minha senha
-      </ion-button>
+  Esqueci minha senha
+</ion-button>
       <ion-button expand="block" fill="clear" router-link="/register">
         Criar conta
       </ion-button>
@@ -42,6 +42,6 @@ async function entrar() {
   })
   loading.value = false
   if (error) erro.value = error.message
-  else router.replace('/welcome')
+  else router.replace('/home')
 }
 </script>
